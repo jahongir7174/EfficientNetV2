@@ -137,6 +137,10 @@ def train(args):
 
                     del state
 
+            del dataset
+            del sampler
+            del loader
+
     if args.distributed:
         torch.distributed.destroy_process_group()
     torch.cuda.empty_cache()
@@ -201,7 +205,7 @@ def main():
     parser.add_argument('--benchmark', action='store_true')
     parser.add_argument('--epochs', default=300, type=int)
     parser.add_argument('--train', action='store_true')
-    parser.add_argument('--test', default=True, action='store_true')
+    parser.add_argument('--test', action='store_true')
 
     args = parser.parse_args()
     args.distributed = int(os.getenv('WORLD_SIZE', 1)) > 1
