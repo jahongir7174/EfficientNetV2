@@ -1,6 +1,7 @@
 import math
 import random
 
+import cv2
 import numpy
 import torch
 from PIL import Image, ImageOps, ImageEnhance
@@ -273,6 +274,58 @@ def poster(image, magnitude):
         return ImageOps.posterize(image, magnitude)
 
 
+def random_hsv(image):
+    x = numpy.arange(0, 256, dtype=numpy.int16)
+    hsv = numpy.random.uniform(-1, 1, 3) * [.015, .7, .4] + 1
+    h, s, v = cv2.split(cv2.cvtColor(image, cv2.COLOR_RGB2HSV))
+
+    lut_hue = ((x * hsv[0]) % 180).astype('uint8')
+    lut_sat = numpy.clip(x * hsv[1], 0, 255).astype('uint8')
+    lut_val = numpy.clip(x * hsv[2], 0, 255).astype('uint8')
+
+    h = cv2.LUT(h, lut_hue)
+    s = cv2.LUT(s, lut_sat)
+    v = cv2.LUT(v, lut_val)
+
+    image_hsv = cv2.merge((h, s, v)).astype('uint8')
+    cv2.cvtColor(image_hsv, cv2.COLOR_HSV2RGB, dst=image)
+
+
+def random_affine(image):
+    h = image.shape[0]
+    w = image.shape[1]
+
+    # Center
+    center = numpy.eye(3)
+    center[0, 2] = -image.shape[1] / 2  # x translation (pixels)
+    center[1, 2] = -image.shape[0] / 2  # y translation (pixels)
+
+    # Perspective
+    perspective = numpy.eye(3)
+
+    # Rotation and Scale
+    rotation = numpy.eye(3)
+    a = random.uniform(-30, 30)
+    s = random.uniform(1 - 0.25, 1 + 0.25)
+    rotation[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)
+
+    # Shear
+    shear = numpy.eye(3)
+    shear[0, 1] = math.tan(random.uniform(-0.1, 0.1) * math.pi / 180)  # x shear (deg)
+    shear[1, 0] = math.tan(random.uniform(-0.1, 0.1) * math.pi / 180)  # y shear (deg)
+
+    # Translation
+    translation = numpy.eye(3)
+    translation[0, 2] = random.uniform(0.5 - 0.2, 0.5 + 0.2) * w  # x translation (pixels)
+    translation[1, 2] = random.uniform(0.5 - 0.2, 0.5 + 0.2) * h  # y translation (pixels)
+
+    # Combined rotation matrix, order of operations (right to left) is IMPORTANT
+    matrix = translation @ shear @ rotation @ perspective @ center
+    if (matrix != numpy.eye(3)).any():  # image changed
+        image = cv2.warpAffine(image, matrix[:2], dsize=(w, h))  # affine
+    return image
+
+
 class Resize:
     def __init__(self, size):
         self.size = size
@@ -323,6 +376,34 @@ class AverageMeter:
         self.num = self.num + n
         self.sum = self.sum + v * n
         self.avg = self.sum / self.num
+
+
+class MixAugment:
+    def __init__(self, mean=4, sigma=0.5, n=4):
+        self.n = n
+        self.mean = mean
+        self.sigma = sigma
+        self.transform = (equalize, identity, invert, normalize,
+                          rotate, shear_x, shear_y, translate_x, translate_y,
+                          brightness, color, contrast, sharpness, solar, poster)
+
+    def __call__(self, image):
+        aug_image = image.copy()
+
+        for transform in numpy.random.choice(self.transform, self.n):
+            magnitude = numpy.random.normal(self.mean, self.sigma)
+            magnitude = min(max_value, max(0., magnitude))
+            aug_image = transform(aug_image, magnitude)
+        alpha = random.random()
+        return Image.blend(image, aug_image, alpha if alpha > 0.3 else alpha / 3)
+
+
+class RandomAffine:
+    def __call__(self, image):
+        image = numpy.asarray(image)
+        random_hsv(image)
+        image = random_affine(image)
+        return Image.fromarray(image)
 
 
 class RandomAugment:
