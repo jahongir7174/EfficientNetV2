@@ -1,4 +1,5 @@
 import os
+from os.path import *
 
 from PIL import Image
 from torch.utils import data
@@ -8,7 +9,7 @@ class Dataset(data.Dataset):
     def __init__(self, data_dir, transform):
         self.transform = transform
 
-        self.samples = self.cache_labels(data_dir)
+        self.samples = self.load_label(data_dir)
 
     def __getitem__(self, index):
         filename, label = self.samples[index]
@@ -27,20 +28,21 @@ class Dataset(data.Dataset):
         return image
 
     @staticmethod
-    def cache_labels(data_dir):
+    def load_label(data_dir):
+        images = []
+        labels = []
+
         cls_names = [folder for folder in os.listdir(data_dir)]
         cls_names.sort()
+
         cls_to_idx = {cls_name: i for i, cls_name in enumerate(cls_names)}
 
-        labels = []
-        images = []
-        for root, dirs, files in os.walk(data_dir, topdown=False, followlinks=True):
-            path = os.path.relpath(root, data_dir) if (root != data_dir) else ''
-            label = os.path.basename(path)
-            for f in files:
-                base, ext = os.path.splitext(f)
+        for root, dirs, filenames in os.walk(data_dir, topdown=False, followlinks=True):
+            label = basename(relpath(root, data_dir) if (root != data_dir) else '')
+            for filename in filenames:
+                base, ext = splitext(filename)
                 if ext.lower() in ('.png', '.jpg', '.jpeg'):
+                    images.append(join(root, filename))
                     labels.append(label)
-                    images.append(os.path.join(root, f))
 
         return [(i, cls_to_idx[j]) for i, j in zip(images, labels) if j in cls_to_idx]
