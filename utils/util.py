@@ -407,7 +407,7 @@ class RandomAffine:
 
 
 class RandomAugment:
-    def __init__(self, mean=9, sigma=0.5, n=3):
+    def __init__(self, mean=9, sigma=0.5, n=2):
         self.n = n
         self.mean = mean
         self.sigma = sigma
