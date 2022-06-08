@@ -45,7 +45,7 @@ def train(args):
     ema_m = nn.EMA(model)
 
     amp_scale = torch.cuda.amp.GradScaler()
-    optimizer = nn.RMSprop(util.weight_decay(model), lr(args), 0.9, 1e-3, 0, 0.9)
+    optimizer = nn.RMSprop(util.weight_decay(model), lr(args))
     if not args.distributed:
         model = torch.nn.parallel.DataParallel(model)
     else:

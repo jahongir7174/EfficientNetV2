@@ -238,7 +238,8 @@ class StepLR:
 
 
 class RMSprop(torch.optim.Optimizer):
-    def __init__(self, params, lr=1e-2, alpha=0.9, eps=1e-10, weight_decay=0, momentum=0.,
+    def __init__(self, params,
+                 lr=1e-2, alpha=0.9, eps=1e-3, weight_decay=0, momentum=0.9,
                  centered=False, decoupled_decay=False, lr_in_momentum=True):
 
         defaults = dict(lr=lr, alpha=alpha, eps=eps, weight_decay=weight_decay, momentum=momentum,
