@@ -2,9 +2,9 @@
 
 ### Steps
 
-* configure `imagenet` path by changing `data_dir` in `main.py`
+* `imagenet` path by changing `data_dir` in `main.py`
 * `bash ./main.sh $ --train` for training model, `$` is number of GPUs
-* see `EfficientNet` class in `nets/nn.py` for different versions
+* `EfficientNet` class in `nets/nn.py` for different versions
 
 ### Note
 
