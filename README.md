@@ -1,18 +1,18 @@
 [EfficientNetV2](https://arxiv.org/abs/2104.00298) implementation using PyTorch
 
-#### Steps
+### Steps
 
 * configure `imagenet` path by changing `data_dir` in `main.py`
 * `bash ./main.sh $ --train` for training model, `$` is number of GPUs
 * see `EfficientNet` class in `nets/nn.py` for different versions
 
-#### Note
+### Note
 
 * the default training configuration is for `EfficientNetV2-S`
 
-#### Parameters and FLOPS
+### Parameters and FLOPS
 
-* run `python main.py --benchmark`
+* `python main.py --benchmark`
 
 ```
 Number of parameters: 21458488
@@ -51,9 +51,9 @@ Parameter Memory per operator type:
         85.0777 MB in Total
 ```
 
-#### Results
+### Results
 
-* run `python main.py --test` for trained model testing
+* `python main.py --test` for trained model testing
 
 |       name       | resolution | acc@1 | acc@5 | #params |  FLOPS  | resample | training loss |
 |:----------------:|:----------:|:-----:|:-----:|:-------:|:-------:|---------:|--------------:|
