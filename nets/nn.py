@@ -325,6 +325,10 @@ class PolyLoss(torch.nn.Module):
 
 
 class CrossEntropyLoss(torch.nn.Module):
+    """
+    NLL Loss with label smoothing.
+    """
+
     def __init__(self, epsilon=0.1):
         super().__init__()
         self.epsilon = epsilon
