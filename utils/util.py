@@ -101,17 +101,17 @@ def print_benchmark(model, shape):
     os.remove('weights/model.pred.pb')
 
 
-def add_weight_decay(model, weight_decay=1e-5):
-    decay = []
-    no_decay = []
+def weight_decay(model, decay=1e-5):
+    p1 = []
+    p2 = []
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
         if len(param.shape) == 1 or name.endswith(".bias"):
-            no_decay.append(param)
+            p1.append(param)
         else:
-            decay.append(param)
-    return [{'params': no_decay, 'weight_decay': 0.}, {'params': decay, 'weight_decay': weight_decay}]
+            p2.append(param)
+    return [{'params': p1, 'weight_decay': 0.}, {'params': p2, 'weight_decay': decay}]
 
 
 def accuracy(output, target, top_k):
