@@ -156,7 +156,7 @@ def test(model=None):
     m_loss = util.AverageMeter()
 
     with torch.no_grad():
-        for samples, targets in tqdm.tqdm(loader, ('%10s' * 2) % ('acc@1', 'acc@5')):
+        for samples, targets in tqdm.tqdm(loader, ('%10s' * 3) % ('acc@1', 'acc@5', 'loss')):
             loss, acc1, acc5 = batch(samples, targets, model, criterion)
 
             torch.cuda.synchronize()
@@ -166,7 +166,7 @@ def test(model=None):
 
             m_loss.update(loss.item(), samples.size(0))
         acc1, acc5 = top1.avg, top5.avg
-        print('%10.3g' * 2 % (acc1, acc5))
+        print('%10.3g' * 3 % (acc1, acc5, m_loss.avg))
     if model is None:
         torch.cuda.empty_cache()
     else:
