@@ -55,8 +55,9 @@ Parameter Memory per operator type:
 
 * run `python main.py --test` for trained model testing
 
-|       name       | resolution | acc@1 | acc@5 | #params |  FLOPS  | resample |
-|:----------------:|:----------:|:-----:|:-----:|:-------:|:-------:|---------:|
-| EfficientNetV2-S |  384x384   | 83.9  | 96.7  |  21.46  | 16.7777 | BILINEAR |
-| EfficientNetV2-M |     -      |   -   |   -   |    -    |    -    |        - |
-| EfficientNetV2-L |     -      |   -   |   -   |    -    |    -    |        - |
+|       name       | resolution | acc@1 | acc@5 | #params |  FLOPS  | resample | training loss |
+|:----------------:|:----------:|:-----:|:-----:|:-------:|:-------:|---------:|--------------:|
+| EfficientNetV2-S |  384x384   | 83.9  | 96.7  |  21.46  | 16.7777 | BILINEAR |  CrossEntropy |
+| EfficientNetV2-S |  384x384   |   -   |   -   |  21.46  | 16.7777 | BILINEAR |      PolyLoss |
+| EfficientNetV2-M |     -      |   -   |   -   |    -    |    -    |        - |             - |
+| EfficientNetV2-L |     -      |   -   |   -   |    -    |    -    |        - |             - |

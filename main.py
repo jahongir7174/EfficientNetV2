@@ -52,7 +52,10 @@ def train(args):
         model = torch.nn.parallel.DistributedDataParallel(model, [args.local_rank])
 
     scheduler = nn.StepLR(optimizer)
-    criterion = nn.CrossEntropyLoss().cuda()
+    if args.poly:
+        criterion = nn.PolyLoss().cuda()
+    else:
+        criterion = nn.CrossEntropyLoss().cuda()
 
     with open(f'weights/step.csv', 'w') as f:
         best = 0
@@ -190,6 +193,7 @@ def main():
     parser.add_argument('--epochs', default=300, type=int)
     parser.add_argument('--train', action='store_true')
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--poly', action='store_true')
 
     args = parser.parse_args()
 
