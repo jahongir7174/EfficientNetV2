@@ -310,7 +310,6 @@ class RMSprop(torch.optim.Optimizer):
 class PolyLoss(torch.nn.Module):
     """
     PolyLoss: A Polynomial Expansion Perspective of Classification Loss Functions
-    <https://arxiv.org/abs/2204.12511>
     """
 
     def __init__(self, epsilon=2.0):
