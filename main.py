@@ -24,6 +24,20 @@ def lr(args):
     return 0.256 * args.batch_size * args.world_size / 4096
 
 
+def mix_up(samples, targets, model, criterion):
+    alpha = numpy.random.beta(1.0, 1.0)
+    index = torch.randperm(samples.size()[0]).cuda()
+
+    samples = samples.cuda()
+    targets = targets.cuda()
+
+    samples = alpha * samples + (1 - alpha) * samples[index, :]
+
+    with torch.cuda.amp.autocast():
+        outputs = model(samples)
+    return criterion(outputs, targets) * alpha + criterion(outputs, targets[index]) * (1 - alpha)
+
+
 def batch(samples, targets, model, criterion):
     samples = samples.cuda()
     targets = targets.cuda()
