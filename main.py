@@ -38,15 +38,33 @@ def mix_up(samples, targets, model, criterion):
     return criterion(outputs, targets) * alpha + criterion(outputs, targets[index]) * (1 - alpha)
 
 
-def batch(samples, targets, model, criterion):
+def cut_mix(samples, targets, model, criterion):
+    shape = samples.size()
+    index = torch.randperm(shape[0]).cuda()
+    alpha = numpy.sqrt(1. - numpy.random.beta(1.0, 1.0))
+
+    w = numpy.int(shape[2] * alpha)
+    h = numpy.int(shape[3] * alpha)
+
+    # uniform
+    c_x = numpy.random.randint(shape[2])
+    c_y = numpy.random.randint(shape[3])
+
+    x1 = numpy.clip(c_x - w // 2, 0, shape[2])
+    y1 = numpy.clip(c_y - h // 2, 0, shape[3])
+    x2 = numpy.clip(c_x + w // 2, 0, shape[2])
+    y2 = numpy.clip(c_y + h // 2, 0, shape[3])
+
     samples = samples.cuda()
     targets = targets.cuda()
 
+    samples[:, :, x1:x2, y1:y2] = samples[index, :, x1:x2, y1:y2]
+
+    alpha = 1 - ((x2 - x1) * (y2 - y1) / (shape[-1] * shape[-2]))
+
     with torch.cuda.amp.autocast():
         outputs = model(samples)
-
-    acc1, acc5 = util.accuracy(outputs, targets, top_k=(1, 5))
-    return criterion(outputs, targets), acc1, acc5
+    return criterion(outputs, targets) * alpha + criterion(outputs, targets[index]) * (1. - alpha)
 
 
 def train(args):
@@ -105,7 +123,13 @@ def train(args):
                 model.train()
                 m_loss = util.AverageMeter()
                 for samples, targets in p_bar:
-                    loss, _, _ = batch(samples, targets, model, criterion)
+                    samples = samples.cuda()
+                    targets = targets.cuda()
+
+                    with torch.cuda.amp.autocast():
+                        outputs = model(samples)
+
+                    loss = criterion(outputs, targets)
 
                     optimizer.zero_grad()
 
@@ -171,14 +195,20 @@ def test(model=None):
 
     with torch.no_grad():
         for samples, targets in tqdm.tqdm(loader, ('%10s' * 3) % ('acc@1', 'acc@5', 'loss')):
-            loss, acc1, acc5 = batch(samples, targets, model, criterion)
+            samples = samples.cuda()
+            targets = targets.cuda()
+
+            with torch.cuda.amp.autocast():
+                outputs = model(samples)
 
             torch.cuda.synchronize()
+
+            acc1, acc5 = util.accuracy(outputs, targets, top_k=(1, 5))
 
             top1.update(acc1.item(), samples.size(0))
             top5.update(acc5.item(), samples.size(0))
 
-            m_loss.update(loss.item(), samples.size(0))
+            m_loss.update(criterion(outputs, targets).item(), samples.size(0))
         acc1, acc5 = top1.avg, top5.avg
         print('%10.3g' * 3 % (acc1, acc5, m_loss.avg))
     if model is None:
