@@ -252,7 +252,7 @@ def main():
         if not os.path.exists('weights'):
             os.makedirs('weights')
 
-    utils.random_seed(0, args.local_rank)
+    util.set_seed()
 
     profile(args)
 

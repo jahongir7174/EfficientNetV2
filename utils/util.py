@@ -22,6 +22,14 @@ def copy_weights(model1, model2):
     torch.save(state, f'weights/best_tf.pt')
 
 
+def set_seed():
+    random.seed(0)
+    numpy.random.seed(0)
+    torch.manual_seed(0)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
+
 def print_benchmark(model, shape):
     import os
     import onnx
